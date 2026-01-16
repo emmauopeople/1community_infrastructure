@@ -31,7 +31,12 @@ resource "aws_kms_alias" "tf_state" {
 
 ################################################
 
+
+
 # --- S3 bucket to store access logs for tf state bucket ---
+#tfsec:ignore:aws-s3-enable-bucket-logging:exp:2026-12-31
+#trivy:ignore:AVD-AWS-0089:exp:2026-12-31
+
 resource "aws_s3_bucket" "tf_state_logs" {
   bucket = lower("${var.project}-tfstate-logs-${local.account_id}-${var.aws_region}")
 }
