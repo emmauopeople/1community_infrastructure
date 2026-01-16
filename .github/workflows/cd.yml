@@ -1,0 +1,51 @@
+name: CD (Terraform apply on main)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: terraform-apply
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  apply_dev:
+    name: Plan + Apply (dev env)
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::302530480617:role/1community-github-terraform-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init (dev)
+        run: terraform -chdir=terraform/envs/dev init -upgrade
+
+      - name: Terraform plan (dev)
+        run: terraform -chdir=terraform/envs/dev plan -no-color -out=tfplan
+
+      - name: Terraform apply (dev)
+        run: terraform -chdir=terraform/envs/dev apply -auto-approve tfplan
