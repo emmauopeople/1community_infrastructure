@@ -115,7 +115,22 @@ resource "aws_dynamodb_table" "tf_locks" {
     name = "LockID"
     type = "S"
   }
+
+  # Fix 1: Encryption at rest (use your CMK)
+  server_side_encryption {
+    enabled     = true
+    kms_key_arn = aws_kms_key.tf_state.arn
+  }
+
+  # Fix 2: Point-in-time recovery (recommended)
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  # Optional (good hardening if supported in your provider):
+  # deletion_protection_enabled = true
 }
+
 
 # --- GitHub OIDC Provider ---
 resource "aws_iam_openid_connect_provider" "github" {
