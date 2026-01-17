@@ -29,6 +29,81 @@ resource "aws_kms_alias" "tf_state" {
   target_key_id = aws_kms_key.tf_state.key_id
 }
 
+################################################
+
+
+
+# --- S3 bucket to store access logs for tf state bucket ---
+
+#tfsec:ignore:aws-s3-enable-bucket-logging:exp:2026-12-31
+#trivy:ignore:AVD-AWS-0089:exp:2026-12-31
+resource "aws_s3_bucket" "tf_state_logs" {
+  bucket = lower("${var.project}-tfstate-logs-${local.account_id}-${var.aws_region}")
+}
+
+resource "aws_s3_bucket_public_access_block" "tf_state_logs" {
+  bucket                  = aws_s3_bucket.tf_state_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_versioning" "tf_state_logs" {
+  bucket = aws_s3_bucket.tf_state_logs.id
+  versioning_configuration { status = "Enabled" }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state_logs" {
+  bucket = aws_s3_bucket.tf_state_logs.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.tf_state.arn
+    }
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "tf_state_logs" {
+  bucket = aws_s3_bucket.tf_state_logs.id
+  rule { object_ownership = "BucketOwnerEnforced" }
+}
+
+# Optional: lifecycle to control log growth (recommended)
+resource "aws_s3_bucket_lifecycle_configuration" "tf_state_logs" {
+  bucket = aws_s3_bucket.tf_state_logs.id
+
+  rule {
+    id     = "expire-old-logs"
+    status = "Enabled"
+
+    # Required by newer providers (use filter instead of prefix)
+    filter {}
+
+    expiration {
+      days = 365
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 90
+    }
+  }
+}
+
+
+# --- Enable access logging on the Terraform state bucket ---
+resource "aws_s3_bucket_logging" "tf_state" {
+  bucket        = aws_s3_bucket.tf_state.id
+  target_bucket = aws_s3_bucket.tf_state_logs.id
+  target_prefix = "tf-state/"
+}
+
+
+
+##############################################
+
+
+
 # --- S3 bucket for Terraform state ---
 resource "aws_s3_bucket" "tf_state" {
   bucket = local.bucket_name
@@ -115,7 +190,22 @@ resource "aws_dynamodb_table" "tf_locks" {
     name = "LockID"
     type = "S"
   }
+
+  # Fix 1: Encryption at rest (use your CMK)
+  server_side_encryption {
+    enabled     = true
+    kms_key_arn = aws_kms_key.tf_state.arn
+  }
+
+  # Fix 2: Point-in-time recovery (recommended)
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  # Optional (good hardening if supported in your provider):
+  # deletion_protection_enabled = true
 }
+
 
 # --- GitHub OIDC Provider ---
 resource "aws_iam_openid_connect_provider" "github" {
