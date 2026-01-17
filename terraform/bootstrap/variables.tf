@@ -14,3 +14,8 @@ variable "github_repo_full_name" {
   type        = string
   description = "GitHub repo in the form OWNER/REPO (e.g, emmauopeople/1community_infrastructure)"
 }
+
+variable "github_repo_oidc_name" {
+  type        = string
+  description = "GitHub repo in the form OWNER/REPO (e.g, emmauopeople/1community_infrastructure)"
+}
