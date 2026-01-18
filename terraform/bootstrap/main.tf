@@ -236,7 +236,8 @@ data "aws_iam_policy_document" "github_assume_role" {
       variable = "token.actions.githubusercontent.com:sub"
       values = [
         "repo:${var.github_repo_oidc_name}:ref:refs/heads/main",
-        "repo:${var.github_repo_oidc_name}:pull_request"
+        "repo:${var.github_repo_oidc_name}:pull_request",
+        "repo:${var.github_repo_oidc_name}:environment:dev"
       ]
     }
   }
