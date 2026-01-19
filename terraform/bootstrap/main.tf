@@ -168,7 +168,7 @@ data "aws_iam_policy_document" "tf_state_bucket_policy" {
       identifiers = ["*"]
     }
     condition {
-      test     = "StringNotEquals"
+      test     = "StringNotEqualsIfExists"
       variable = "s3:x-amz-server-side-encryption"
       values   = ["aws:kms"]
     }
