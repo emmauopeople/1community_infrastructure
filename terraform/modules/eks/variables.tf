@@ -25,13 +25,13 @@ variable "private_subnet_ids" {
 }
 
 variable "endpoint_private_access" {
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
 
 variable "endpoint_public_access" {
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
 
 variable "public_access_cidrs" {
@@ -40,31 +40,31 @@ variable "public_access_cidrs" {
 }
 
 variable "node_instance_types" {
-  type        = list(string)
-  default     = ["t3.large"]
+  type    = list(string)
+  default = ["t3.large"]
 }
 
 variable "node_disk_size" {
-  type        = number
-  default     = 50
+  type    = number
+  default = 50
 }
 
 variable "node_min_size" {
-  type        = number
-  default     = 1
+  type    = number
+  default = 1
 }
 
 variable "node_desired_size" {
-  type        = number
-  default     = 1
+  type    = number
+  default = 1
 }
 
 variable "node_max_size" {
-  type        = number
-  default     = 3
+  type    = number
+  default = 3
 }
 
 variable "tags" {
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }
