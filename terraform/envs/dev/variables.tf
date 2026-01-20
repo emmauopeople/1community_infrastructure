@@ -36,3 +36,21 @@ variable "tags" {
     Repo        = "1community_infrastructure"
   }
 }
+
+variable "kubernetes_version" {
+  type    = string
+  default = "1.29"
+}
+
+# IMPORTANT:
+# Default is VPC CIDR to keep the public endpoint restricted (clean scans).
+# When you want kubectl from home, set this to ["<YOUR_PUBLIC_IP>/32"].
+variable "public_access_cidrs" {
+  type    = list(string)
+  default = ["10.0.0.0/16"]
+}
+
+variable "node_instance_types" {
+  type    = list(string)
+  default = ["t3.large"]
+}
