@@ -47,7 +47,7 @@ variable "kubernetes_version" {
 # When you want kubectl from home, set this to ["<YOUR_PUBLIC_IP>/32"].
 variable "public_access_cidrs" {
   type    = list(string)
-  default = ["10.0.0.0/16"]
+  default =  ["174.67.8.158"]
 }
 
 variable "node_instance_types" {
